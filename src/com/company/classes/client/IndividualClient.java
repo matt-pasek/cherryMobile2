@@ -1,6 +1,5 @@
 package com.company.classes.client;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -37,7 +36,7 @@ public class IndividualClient extends Client{
                         "INSERT INTO client(email)  VALUES ('"+email+"');"
                 );
                 rs = stmt.executeQuery(
-                        "SELECT id FROM client WHERE email='"+ email + "';"
+                        "SELECT id FROM client WHERE email='"+email+"';"
                 );
                 while(rs.next()) {
                     int id = rs.getInt("id");
