@@ -63,7 +63,7 @@ public class ClientUpdate {
                 char secound = nip.charAt(7);
                 char third = nip.charAt(10);
                 if(first=='-' && secound=='-' && third=='-') {
-                    System.out.println("A new business customer has been created");
+                    System.out.println("NIP validated successfully.");
                     return new BusinessClient(nip, regon, companyName, email);
                 }else {
                         System.out.println("Error nip xxx-xxx-xx-xx");
