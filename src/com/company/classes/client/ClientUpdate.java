@@ -54,7 +54,7 @@ public class ClientUpdate {
     }
 
     //ADD CLIENTS
-    public static BusinessClient CreateBusinessClient(String nip, String regon, String companyName){
+    public static BusinessClient CreateBusinessClient(String nip, String regon, String companyName, String email){
         //sprawdzanie nipu
         //sprawdzanie czy nie ma już takiej firmy
         if(checkIfBusinessClientExist(nip) == false) {
@@ -64,7 +64,7 @@ public class ClientUpdate {
                 char third = nip.charAt(10);
                 if(first=='-' && secound=='-' && third=='-') {
                     System.out.println("A new business customer has been created");
-                    return new BusinessClient(nip, regon, companyName);
+                    return new BusinessClient(nip, regon, companyName, email);
                 }else {
                         System.out.println("Error nip xxx-xxx-xx-xx");
                         return null;
@@ -115,6 +115,11 @@ public class ClientUpdate {
     //DELETE CLIENTS
 
     public static void DeleteBusinessClient(String nip){
+        int pointer = 0;
+        String regon = "";
+        String companyName = "";
+        String email = "";
+
         if(checkIfBusinessClientExist(nip)) {
             System.out.println("The buisnes client has been removedd");
             try {
@@ -122,10 +127,31 @@ public class ClientUpdate {
                 String url = "jdbc:sqlite:db.sqlite";
                 Connection conn = DriverManager.getConnection(url);
                 Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(
+                        "SELECT * FROM businessClient WHERE nip='"+ nip + "';"
+                );
+                while(rs.next()) {
+                    pointer = rs.getInt("pointer");
+                    regon = rs.getString("regon");
+                    companyName = rs.getString("companyName");
+
+                }
+
                 stmt.execute(
-                        "DELETE FROM businessClient WHERE nip='"+ nip +"';"
+                        "INSERT INTO oldBusinessClient(id, email, nip, regon, companyName) VALUES ("+ pointer +", '" + email + "', '" + nip +"', '" + regon +"', '"+ companyName +"');"
                 );
 
+                rs = stmt.executeQuery(
+                        "SELECT pointer FROM businessClient WHERE nip='" + nip +"';"
+                );
+                while(rs.next()) {
+                    pointer = rs.getInt("pointer");
+                    stmt.execute("DELETE FROM client WHERE id=" + pointer +";");
+                }
+
+                stmt.execute(
+                        "DELETE FROM businessClient WHERE nip='" + nip +"';"
+                );
             } catch (Exception e) {
                 System.err.println("Got an exception! ");
                 System.err.println(e.getMessage());

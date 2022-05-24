@@ -41,7 +41,6 @@ public class IndividualClient extends Client{
                 );
                 while(rs.next()) {
                     int id = rs.getInt("id");
-                    System.out.println(pesel);
                     stmt.execute(
                             "INSERT INTO individualClient(pointer, fName, lName, pesel)  VALUES ('"+id+"', '"+fName+"', '"+lName+"', '"+pesel+"');"
                     );
