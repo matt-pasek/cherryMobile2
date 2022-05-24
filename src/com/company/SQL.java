@@ -47,7 +47,8 @@ public class SQL {
                 create table if not exists client
                 (
                 id    integer not null constraint client_pk primary key autoincrement,
-                email text
+                email text,
+                contractCount integer
                 );
 
                 create unique index client_id_uindex

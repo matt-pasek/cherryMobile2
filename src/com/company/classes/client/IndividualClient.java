@@ -15,16 +15,43 @@ public class IndividualClient extends Client{
         this.lName = lName;
         this.pesel = pesel;
         this.email = email;
+        this.contractCount = 0;
+    }
 
+    public String getfName() {
+        return fName;
+    }
+
+    public void setfName(String fName) {
+        this.fName = fName;
+    }
+
+    public String getlName() {
+        return lName;
+    }
+
+    public void setlName(String lName) {
+        this.lName = lName;
+    }
+
+    public String getPesel() {
+        return pesel;
+    }
+
+    public void setPesel(String pesel) {
+        this.pesel = pesel;
+    }
+
+    @Override
+    public void uploadClient() {
         int emailCount = 1;
-
         try {
             Class.forName("org.sqlite.JDBC");
             String url = "jdbc:sqlite:db.sqlite";
             Connection conn = DriverManager.getConnection(url);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(
-                    "SELECT COUNT(email) as email FROM client WHERE email='"+email+"';"
+                    "SELECT COUNT(email) as email FROM client WHERE email='"+this.email+"';"
             );
             while (rs.next()) {
                 emailCount = rs.getInt("email");
@@ -33,15 +60,15 @@ public class IndividualClient extends Client{
                 System.out.println("Client with this email already exists or there was an internal error.");
             } else {
                 stmt.execute(
-                        "INSERT INTO client(email)  VALUES ('"+email+"');"
+                        "INSERT INTO client(email, contractCount) VALUES ('"+this.email+"', '"+this.contractCount+"');"
                 );
                 rs = stmt.executeQuery(
-                        "SELECT id FROM client WHERE email='"+email+"';"
+                        "SELECT id FROM client WHERE email='"+this.email+"';"
                 );
                 while(rs.next()) {
                     int id = rs.getInt("id");
                     stmt.execute(
-                            "INSERT INTO individualClient(pointer, fName, lName, pesel)  VALUES ('"+id+"', '"+fName+"', '"+lName+"', '"+pesel+"');"
+                            "INSERT INTO individualClient(pointer, fName, lName, pesel)  VALUES ('"+id+"', '"+this.fName+"', '"+this.lName+"', '"+this.pesel+"');"
                     );
                     System.out.println("New individual client has been created");
                     break;

@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-public class BusinessClient extends Client{
+public class BusinessClient extends Client {
     String nip;
     String regon;
     String companyName;
@@ -17,14 +17,50 @@ public class BusinessClient extends Client{
         this.regon = regon;
         this.companyName = companyName;
         this.email = email;
+        this.contractCount = 0;
+    }
 
+    public String getNip() {
+        return nip;
+    }
+
+    public void setNip(String nip) {
+        this.nip = nip;
+    }
+
+    public String getRegon() {
+        return regon;
+    }
+
+    public void setRegon(String regon) {
+        this.regon = regon;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public int getEmailCount() {
+        return emailCount;
+    }
+
+    public void setEmailCount(int emailCount) {
+        this.emailCount = emailCount;
+    }
+
+    @Override
+    public void uploadClient(){
         try {
             Class.forName("org.sqlite.JDBC");
             String url = "jdbc:sqlite:db.sqlite";
             Connection conn = DriverManager.getConnection(url);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(
-                    "SELECT COUNT(email) as email FROM client WHERE email='"+email+"';"
+                    "SELECT COUNT(email) as email FROM client WHERE email='"+this.email+"';"
             );
             while (rs.next()) {
                 emailCount = rs.getInt("email");
@@ -33,7 +69,7 @@ public class BusinessClient extends Client{
                 System.out.println("Client with this email already exists or there was an internal error.");
             } else {
                 stmt.execute(
-                        "INSERT INTO client(email)  VALUES ('"+email+"');"
+                        "INSERT INTO client(email, contractCount) VALUES ('"+this.email+"','"+ this.contractCount +"');"
                 );
                 rs = stmt.executeQuery(
                         "SELECT id FROM client WHERE email='"+email+"';"
@@ -41,7 +77,7 @@ public class BusinessClient extends Client{
                 while(rs.next()) {
                     int id = rs.getInt("id");
                     stmt.execute(
-                            "INSERT INTO businessClient(pointer, nip, regon, companyName)  VALUES ('"+id+"', '"+nip+"', '"+regon+"', '"+companyName+"');"
+                            "INSERT INTO businessClient(pointer, nip, regon, companyName)  VALUES ('"+id+"', '"+this.nip+"', '"+this.regon+"', '"+this.companyName+"');"
                     );
                     System.out.println("New business client has been created");
                     break;
@@ -53,6 +89,5 @@ public class BusinessClient extends Client{
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());
         }
-
     }
 }

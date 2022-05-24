@@ -57,7 +57,7 @@ public class ClientUpdate {
     public static BusinessClient CreateBusinessClient(String nip, String regon, String companyName, String email){
         //sprawdzanie nipu
         //sprawdzanie czy nie ma już takiej firmy
-        if(checkIfBusinessClientExist(nip) == false) {
+        if(!checkIfBusinessClientExist(nip)) {
             if(nip.length() == 13) {
                 char first = nip.charAt(3);
                 char secound = nip.charAt(7);
@@ -74,8 +74,7 @@ public class ClientUpdate {
                 return null;
             }
         }else{
-            System.out.println("Client with that NIP is already exist");
-            return null;
+            return new BusinessClient(nip, regon, companyName, email);
         }
     }
 
@@ -85,7 +84,7 @@ public class ClientUpdate {
             if(PESELstr.length() == 11) {
                 //sprawdzanie PESELU
                 int first = Integer.parseInt(String.valueOf(PESELstr.charAt(0)));
-                int secound = Integer.parseInt(String.valueOf(PESELstr.charAt(1)));
+                int second = Integer.parseInt(String.valueOf(PESELstr.charAt(1)));
                 int third = Integer.parseInt(String.valueOf(PESELstr.charAt(2)));
                 int fourth = Integer.parseInt(String.valueOf(PESELstr.charAt(3)));
                 int fifth = Integer.parseInt(String.valueOf(PESELstr.charAt(4)));
@@ -95,7 +94,7 @@ public class ClientUpdate {
                 int ninth = Integer.parseInt(String.valueOf(PESELstr.charAt(8)));
                 int tenth = Integer.parseInt(String.valueOf(PESELstr.charAt(9)));
                 int result = 10 - Integer.parseInt(String.valueOf(PESELstr.charAt(10)));
-                if ((first + secound * 3 + third * 7 + fourth * 9 + fifth * 1 + sixth * 3 + seventh * 7 + eighth * 9 + ninth * 1 + tenth * 3) % 10 == result) {
+                if ((first + second * 3 + third * 7 + fourth * 9 + fifth + sixth * 3 + seventh * 7 + eighth * 9 + ninth + tenth * 3) % 10 == result) {
                     System.out.println("PESEL validated successfully.");
                     return new IndividualClient(Name, Surname, PESELstr, email);
                 } else {
@@ -107,8 +106,8 @@ public class ClientUpdate {
                 return null;
             }
         }else{
-            System.out.println("Client with that PESEL is already exist");
-            return null;
+            System.out.println("Client with this PESEL already exists.");
+            return new IndividualClient(Name, Surname, PESELstr, email);
         }
     }
 
@@ -121,7 +120,7 @@ public class ClientUpdate {
         String email = "";
 
         if(checkIfBusinessClientExist(nip)) {
-            System.out.println("The buisnes client has been removedd");
+            System.out.println("The business client has been removed");
             try {
                 Class.forName("org.sqlite.JDBC");
                 String url = "jdbc:sqlite:db.sqlite";

@@ -9,4 +9,6 @@ public class Contract {
     int smsCount;
     int mmsCount;
     int transferMbsCount;
+
+    // when add contract get contract amount check and increment for both
 }
