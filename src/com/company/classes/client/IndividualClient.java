@@ -33,18 +33,6 @@ public class IndividualClient extends Client{
             if (emailCount > 0) {
                 System.out.println("Client with this email already exists or there was an internal error.");
             } else {
-                rs = stmt.executeQuery(
-                        "SELECT * FROM individualClient WHERE email='"+ email + "';"
-                );
-                while(rs.next()) {
-                    int pointer = rs.getInt("pointer");
-                    fName = rs.getString("fName");
-                    lName = rs.getString("lName");
-                    String PESELstr = rs.getString("pesel");
-                    stmt.execute(
-                            "INSERT INTO oldIndividualClients(id, fName, lName, pesel) VALUES ("+ pointer +", '"+ fName +"', '" + lName +"', '"+ pesel +"');"
-                    );
-                }
                 stmt.execute(
                         "INSERT INTO client(email)  VALUES ('"+email+"');"
                 );
@@ -54,7 +42,7 @@ public class IndividualClient extends Client{
                 while(rs.next()) {
                     int id = rs.getInt("id");
                     stmt.execute(
-                            "INSERT INTO individualClient(pointer, fName, lName, pesel)  VALUES ('"+id+"', '"+fName+"', '"+lName+"', "+pesel+");"
+                            "INSERT INTO individualClient(pointer, fName, lName, pesel)  VALUES ('"+id+"', '"+fName+"', '"+lName+"', '"+pesel+"');"
                     );
                     System.out.println("New individual client has been created");
                     break;

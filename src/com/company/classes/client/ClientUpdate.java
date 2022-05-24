@@ -11,7 +11,7 @@ import java.sql.Statement;
 
 public class ClientUpdate {
     //CHECK CLIENTS
-    public static boolean checkIfPrivateClientExist(BigDecimal PESEL){
+    public static boolean checkIfPrivateClientExist(String pesel){
         int countThisPesel = 1;
         try {
             Class.forName("org.sqlite.JDBC");
@@ -19,7 +19,7 @@ public class ClientUpdate {
             Connection conn = DriverManager.getConnection(url);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(
-                    "SELECT COUNT(PESEL) as pesel FROM individualClient WHERE PESEL="+PESEL+";"
+                    "SELECT COUNT(PESEL) as pesel FROM individualClient WHERE PESEL='"+pesel+"';"
             );
             while (rs.next()) {
                 countThisPesel = rs.getInt("pesel");
@@ -29,11 +29,7 @@ public class ClientUpdate {
             System.err.println(e.getMessage());
         }
 
-        if (countThisPesel == 0){
-            return false;
-        }else{
-            return true;
-        }
+        return countThisPesel != 0;
     }
 
     public static boolean checkIfBusinessClientExist(String NIP){
@@ -54,11 +50,7 @@ public class ClientUpdate {
             System.err.println(e.getMessage());
         }
 
-        if (countThisNip == 0){
-            return false;
-        }else{
-            return true;
-        }
+        return countThisNip != 0;
     }
 
     //ADD CLIENTS
@@ -67,9 +59,9 @@ public class ClientUpdate {
         //sprawdzanie czy nie ma już takiej firmy
         if(checkIfBusinessClientExist(nip) == false) {
             if(nip.length() == 13) {
-                Character first = nip.charAt(3);
-                Character secound = nip.charAt(7);
-                Character third = nip.charAt(10);
+                char first = nip.charAt(3);
+                char secound = nip.charAt(7);
+                char third = nip.charAt(10);
                 if(first=='-' && secound=='-' && third=='-') {
                     System.out.println("A new business customer has been created");
                     return new BusinessClient(nip, regon, companyName);
@@ -89,8 +81,7 @@ public class ClientUpdate {
 
 
     public static IndividualClient CreatePrivateClient(String Name, String Surname, String PESELstr, String email){
-        BigDecimal PESELint = new BigDecimal(PESELstr);
-        if(checkIfPrivateClientExist(PESELint) == false) {
+        if(!checkIfPrivateClientExist(PESELstr)) {
             if(PESELstr.length() == 11) {
                 //sprawdzanie PESELU
                 int first = Integer.parseInt(String.valueOf(PESELstr.charAt(0)));
@@ -104,7 +95,7 @@ public class ClientUpdate {
                 int ninth = Integer.parseInt(String.valueOf(PESELstr.charAt(8)));
                 int tenth = Integer.parseInt(String.valueOf(PESELstr.charAt(9)));
                 int result = 10 - Integer.parseInt(String.valueOf(PESELstr.charAt(10)));
-                if ((first * 1 + secound * 3 + third * 7 + fourth * 9 + fifth * 1 + sixth * 3 + seventh * 7 + eighth * 9 + ninth * 1 + tenth * 3) % 10 == result) {
+                if ((first + secound * 3 + third * 7 + fourth * 9 + fifth * 1 + sixth * 3 + seventh * 7 + eighth * 9 + ninth * 1 + tenth * 3) % 10 == result) {
                     System.out.println("PESEL validated successfully.");
                     return new IndividualClient(Name, Surname, PESELstr, email);
                 } else {
@@ -124,7 +115,7 @@ public class ClientUpdate {
     //DELETE CLIENTS
 
     public static void DeleteBusinessClient(String nip){
-        if(checkIfBusinessClientExist(nip) == true) {
+        if(checkIfBusinessClientExist(nip)) {
             System.out.println("The buisnes client has been removedd");
             try {
                 Class.forName("org.sqlite.JDBC");
@@ -146,8 +137,13 @@ public class ClientUpdate {
     }
 
     public static void DeletePrivateClient(String PESELstr){
+        int pointer = 0;
+        String fName = "";
+        String lName = "";
+        String email = "";
         BigDecimal PESELint = new BigDecimal(PESELstr);
-        if(checkIfPrivateClientExist(PESELint) == true) {
+
+        if(checkIfPrivateClientExist(PESELstr)) {
             System.out.println("Found client with given PESEL");
             try {
                 Class.forName("org.sqlite.JDBC");
@@ -155,10 +151,23 @@ public class ClientUpdate {
                 Connection conn = DriverManager.getConnection(url);
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(
+                        "SELECT * FROM individualClient WHERE pesel='"+ PESELstr + "';"
+                );
+                while(rs.next()) {
+                     pointer = rs.getInt("pointer");
+                     fName = rs.getString("fName");
+                     lName = rs.getString("lName");;
+                }
+
+                stmt.execute(
+                        "INSERT INTO oldIndividualClient(id, email, fName, lName, pesel) VALUES ("+ pointer +", '" + email + "', '" + fName +"', '" + lName +"', '"+ PESELstr +"');"
+                );
+
+                rs = stmt.executeQuery(
                         "SELECT pointer FROM individualClient WHERE pesel='" + PESELstr +"';"
                 );
                 while(rs.next()) {
-                    int pointer = rs.getInt("pointer");
+                    pointer = rs.getInt("pointer");
                     stmt.execute("DELETE FROM client WHERE id=" + pointer +";");
                 }
 
