@@ -1,5 +1,8 @@
 package com.company.classes.tariffs;
 
-public class Tariff {
+import java.math.BigDecimal;
 
+public abstract class Tariff {
+    int id;
+    String tariffName;
 }

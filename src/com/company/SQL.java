@@ -18,7 +18,8 @@ public class SQL {
                 pointer     integer not null constraint businessClient_pk primary key,
                 nip         text,
                 regon       text,
-                companyName text
+                companyName text,
+                FOREIGN KEY (pointer) REFERENCES client(id)
                 );
 
                 create unique index businessClient_pointer_uindex
@@ -63,7 +64,9 @@ public class SQL {
                 pointer integer not null constraint individualClient_pk primary key,
                 fName   text,
                 lName   text,
-                pesel   text
+                pesel   text,
+                FOREIGN KEY (pointer) REFERENCES client(id)
+                
                 );
 
                 create unique index individualClient_pointer_uindex
@@ -94,8 +97,10 @@ public class SQL {
                     id          integer not null
                         constraint account_pk
                             primary key autoincrement,
+                    accountName text,
                     idClient    integer not null,
-                    billingDate int
+                    billingDate int,
+                    FOREIGN KEY (idClient) REFERENCES client(id)
                 );
 
                 create unique index account_id_uindex
@@ -105,13 +110,17 @@ public class SQL {
         stmt.execute("""
                 create table if not exists contract
                 (
-                    msisdn           integer not null,
+                    msisdn           integer not null
+                        constraint account_pk
+                            primary key,
                     idAccount        integer not null,
                     idTariff         integer not null,
                     callCount        integer,
                     smsCount         integer,
                     mmsCount         integer,
-                    transferMbsCount integer
+                    transferMbsCount integer,
+                    FOREIGN KEY (idAccount) REFERENCES account(id),
+                    FOREIGN KEY (idTariff) REFERENCES tariff(id)
                 );
 
                 create unique index contract_msisdn_uindex
@@ -126,7 +135,8 @@ public class SQL {
                             primary key,
                     smsPrice         real,
                     mmsPrice         real,
-                    transferMbsPrice real
+                    transferMbsPrice real,
+                    FOREIGN KEY (pointer) REFERENCES tariff(id)
                 );
 
                 create unique index postpaidTariff_pointer_uindex
@@ -147,7 +157,8 @@ public class SQL {
                     extraCallPrice     real,
                     extraSmsPrice      real,
                     extraMmsPrice      real,
-                    extraTransferPrice real
+                    extraTransferPrice real,
+                    FOREIGN KEY (pointer) REFERENCES tariff(id)
                 );
 
                 create unique index prepaidTariff_pointer_uindex
@@ -159,7 +170,8 @@ public class SQL {
                 (
                     id integer not null
                         constraint tariff_pk
-                            primary key autoincrement
+                            primary key autoincrement,\040
+                    tariffName text
                 );
 
                 create unique index tariff_id_uindex

@@ -64,7 +64,9 @@ public class ClientUpdate {
                 char third = nip.charAt(10);
                 if(first=='-' && secound=='-' && third=='-') {
                     System.out.println("NIP validated successfully.");
-                    return new BusinessClient(nip, regon, companyName, email);
+                    BusinessClient client = new BusinessClient(nip, regon, companyName, email);
+                    client.uploadClient();
+                    return client;
                 }else {
                         System.out.println("Error nip xxx-xxx-xx-xx");
                         return null;
@@ -73,7 +75,8 @@ public class ClientUpdate {
                 System.out.println("Error to short nip");
                 return null;
             }
-        }else{
+        } else {
+            System.out.println("Client with this NIP already exists.");
             return new BusinessClient(nip, regon, companyName, email);
         }
     }
@@ -96,16 +99,18 @@ public class ClientUpdate {
                 int result = 10 - Integer.parseInt(String.valueOf(PESELstr.charAt(10)));
                 if ((first + second * 3 + third * 7 + fourth * 9 + fifth + sixth * 3 + seventh * 7 + eighth * 9 + ninth + tenth * 3) % 10 == result) {
                     System.out.println("PESEL validated successfully.");
-                    return new IndividualClient(Name, Surname, PESELstr, email);
+                    IndividualClient client = new IndividualClient(Name, Surname, PESELstr, email);
+                    client.uploadClient();
+                    return client;
                 } else {
                     System.out.println("Error PESEL");
                     return null;
                 }
-            }else{
+            } else {
                 System.out.println("Error to short PESEL");
                 return null;
             }
-        }else{
+        } else {
             System.out.println("Client with this PESEL already exists.");
             return new IndividualClient(Name, Surname, PESELstr, email);
         }
@@ -151,6 +156,10 @@ public class ClientUpdate {
                 stmt.execute(
                         "DELETE FROM businessClient WHERE nip='" + nip +"';"
                 );
+
+                stmt.execute(
+                        "DELETE FROM account WHERE idClient=" + pointer + ";"
+                );
             } catch (Exception e) {
                 System.err.println("Got an exception! ");
                 System.err.println(e.getMessage());
@@ -161,14 +170,13 @@ public class ClientUpdate {
         }
     }
 
-    public static void DeletePrivateClient(String PESELstr){
+    public static void DeletePrivateClient(String pesel){
         int pointer = 0;
         String fName = "";
         String lName = "";
         String email = "";
-        BigDecimal PESELint = new BigDecimal(PESELstr);
 
-        if(checkIfPrivateClientExist(PESELstr)) {
+        if(checkIfPrivateClientExist(pesel)) {
             System.out.println("Found client with given PESEL");
             try {
                 Class.forName("org.sqlite.JDBC");
@@ -176,7 +184,7 @@ public class ClientUpdate {
                 Connection conn = DriverManager.getConnection(url);
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(
-                        "SELECT * FROM individualClient WHERE pesel='"+ PESELstr + "';"
+                        "SELECT * FROM individualClient WHERE pesel='"+ pesel + "';"
                 );
                 while(rs.next()) {
                      pointer = rs.getInt("pointer");
@@ -185,11 +193,11 @@ public class ClientUpdate {
                 }
 
                 stmt.execute(
-                        "INSERT INTO oldIndividualClient(id, email, fName, lName, pesel) VALUES ("+ pointer +", '" + email + "', '" + fName +"', '" + lName +"', '"+ PESELstr +"');"
+                        "INSERT INTO oldIndividualClient(id, email, fName, lName, pesel) VALUES ("+ pointer +", '" + email + "', '" + fName +"', '" + lName +"', '"+ pesel +"');"
                 );
 
                 rs = stmt.executeQuery(
-                        "SELECT pointer FROM individualClient WHERE pesel='" + PESELstr +"';"
+                        "SELECT pointer FROM individualClient WHERE pesel='" + pesel +"';"
                 );
                 while(rs.next()) {
                     pointer = rs.getInt("pointer");
@@ -197,7 +205,12 @@ public class ClientUpdate {
                 }
 
                 stmt.execute(
-                        "DELETE FROM individualClient WHERE pesel='" + PESELstr +"';"
+                        "DELETE FROM individualClient WHERE pesel='" + pesel +"';"
+                );
+
+
+                stmt.execute(
+                    "DELETE FROM account WHERE idClient=" + pointer + ";"
                 );
 
             } catch (Exception e) {

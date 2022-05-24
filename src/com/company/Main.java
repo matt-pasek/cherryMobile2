@@ -18,11 +18,16 @@ public class Main {
             Client client1 = ClientUpdate.CreatePrivateClient("Anna", "Lis", "59121124832", "sagata@o2.pl");
             //ClientUpdate.DeletePrivateClient("06243005875");
             assert client2 != null;
-            client2.uploadClient();
-            Account acc2 = client2.createAccount();
-            acc2.uploadAccount();
-            Account acc21= client2.createAccount();
-            acc21.uploadAccount();
+            assert client1 != null;
+
+            Account acc2 = client1.createAccount("dziecience");
+
+            Account acc11 = client1.createAccount("modlitwa");
+
+            Account acc21 = client2.createAccount("mieszkanie");
+            acc21.destroyAccount();
+            ClientUpdate.DeletePrivateClient("59121124832");
+
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }

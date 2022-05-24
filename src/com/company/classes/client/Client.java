@@ -37,7 +37,7 @@ public abstract class Client {
         this.accounts = accounts;
     }
 
-    public Account createAccount(){
+    public Account createAccount(String name){
         int id = -1;
         try {
             Class.forName("org.sqlite.JDBC");
@@ -47,12 +47,20 @@ public abstract class Client {
             ResultSet rs = stmt.executeQuery(
                     "SELECT id FROM client WHERE email='"+this.email+"';"
             );
+
             while (rs.next()) {
                 id = rs.getInt("id");
             }
-            Account acc = new Account(id);
-            this.accounts.add(acc);
-            return acc;
+
+            if (id == -1) {
+                System.err.println("Account has not been created.");
+                return null;
+            } else {
+                Account acc = new Account(id, name);
+                acc.uploadAccount();
+                this.accounts.add(acc);
+                return acc;
+            }
         } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());
