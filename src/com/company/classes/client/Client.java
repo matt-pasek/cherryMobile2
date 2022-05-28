@@ -48,11 +48,13 @@ public abstract class Client extends DBConnect {
 
             if (id == -1) {
                 System.err.println("Account has not been created.");
+                disconn();
                 return null;
             } else {
                 Account acc = new Account(id, name);
                 acc.uploadAccount();
                 this.accounts.add(acc);
+                disconn();
                 return acc;
             }
         } catch (Exception e) {

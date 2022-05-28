@@ -16,6 +16,7 @@ public class ClientUpdate extends DBConnect {
             while (rs.next()) {
                 countThisPesel = rs.getInt("pesel");
             }
+            disconn();
         } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());
@@ -34,6 +35,7 @@ public class ClientUpdate extends DBConnect {
             while (rs.next()) {
                 countThisNip = rs.getInt("nip");
             }
+            disconn();
         } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());
@@ -157,6 +159,7 @@ public class ClientUpdate extends DBConnect {
                 stmt.execute(
                         "DELETE FROM account WHERE idClient=" + pointer + ";"
                 );
+                disconn();
             } catch (Exception e) {
                 System.err.println("Got an exception! ");
                 System.err.println(e.getMessage());
@@ -217,6 +220,7 @@ public class ClientUpdate extends DBConnect {
                 stmt.execute(
                     "DELETE FROM account WHERE idClient=" + pointer + ";"
                 );
+                disconn();
             } catch (Exception e) {
                 System.err.println("Got an exception! ");
                 System.err.println(e.getMessage());

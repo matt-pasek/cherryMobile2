@@ -1,5 +1,7 @@
 package com.company;
 
+import com.company.classes.DBConnect;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -7,11 +9,12 @@ import java.sql.Statement;
 
 public class SQL {
     static void setup() throws ClassNotFoundException, SQLException {
+        // zostawiliśmy tutaj kod, ponieważ metoda musi być statyczna, bo tak jest ładniej w mainie :)
         Class.forName("org.sqlite.JDBC");
         System.out.println("Configuring database");
         String url = "jdbc:sqlite:db.sqlite";
-        Connection con = DriverManager.getConnection(url);
-        Statement stmt = con.createStatement();
+        Connection conn = DriverManager.getConnection(url);
+        Statement stmt = conn.createStatement();
         stmt.execute("""
                 create table if not exists businessClient
                 (
@@ -184,8 +187,8 @@ public class SQL {
                     
 
                 """);
-
-
+       if (stmt != null) try { stmt.close(); } catch (SQLException ignored) {}
+       if (conn != null) try { conn.close(); } catch (SQLException ignored) {}
     }
 
 }

@@ -15,7 +15,31 @@ public class IndividualClient extends Client{
         this.lName = lName;
         this.pesel = pesel;
         this.email = email;
-        this.contractCount = 0;
+        int pointer = -1;
+        int contractCount = -1;
+        conn();
+        try {
+            rs = stmt.executeQuery(
+                    "SELECT pointer FROM individualClient WHERE pesel="+ pesel +";"
+            );
+            while (rs.next()){
+                pointer = rs.getInt("pointer");
+            }
+            if(pointer == -1) {
+                System.out.println("Database error");
+            } else {
+                rs = stmt.executeQuery(
+                        "SELECT contractCount FROM client WHERE id="+ pointer +";"
+                );
+                while (rs.next()){
+                    contractCount = rs.getInt("contractCount");
+                }
+            }
+            this.contractCount = contractCount;
+        } catch (Exception e) {
+            System.err.println("Got an exception!");
+            System.err.println(e.getMessage());
+        }
     }
 
     public String getfName() {
@@ -71,6 +95,7 @@ public class IndividualClient extends Client{
                     break;
                 }
             }
+            disconn();
         } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());

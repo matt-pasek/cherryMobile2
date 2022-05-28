@@ -24,10 +24,37 @@ public class Contract extends DBConnect {
 
     public void uploadContract(int accountId) {
         conn();
+        int idClient = -1;
         try {
+            rs = stmt.executeQuery(
+                    "SELECT idClient FROM account WHERE id=" + accountId + ";"
+            );
+            while(rs.next()) {
+                idClient = rs.getInt("idClient");
+            }
+            if(idClient == -1) {
+                System.out.println("Database error!");
+            } else {
+                int contractCount = -1;
+                rs = stmt.executeQuery(
+                        "SELECT contractCount FROM client WHERE id=" + idClient + ";"
+                );
+                while(rs.next()) {
+                    contractCount = rs.getInt("contractCount");
+                }
+                if(contractCount == -1) {
+                    System.out.println("Database error!");
+                } else {
+                    contractCount++;
+                    stmt.execute(
+                            "UPDATE client SET contractCount =" + contractCount + " WHERE id=" + idClient + ";"
+                    );
+                }
+            }
             stmt.execute(
                     "INSERT INTO contract(msisdn, idAccount, idTariff, callCount, smsCount, mmsCount, transferMbsCount) VALUES (" + this.msisdn + ", " + accountId + ", " + this.tariffId + ", " + this.smsCount + ", " + this.mmsCount + ", " + this.callCount + ", " + this.transferMbsCount + ");"
             );
+            disconn();
         } catch (Exception e) {
             System.err.println("Got an exception!");
             System.err.println(e.getMessage());

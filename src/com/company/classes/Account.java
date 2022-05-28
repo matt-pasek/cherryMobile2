@@ -17,8 +17,8 @@ public class Account extends DBConnect {
         int[] billingDays = {1, 4, 7, 11, 14, 17, 21, 24, 27};
         boolean isSet = false;
         for(int i : billingDays){
-            if(date.getDayOfMonth()<=i){
-                this.billingDate = date.getDayOfMonth();
+            if(day<=i){
+                this.billingDate = day;
                 isSet = true;
                 break;
             }
@@ -41,7 +41,6 @@ public class Account extends DBConnect {
         boolean clientIndividual = false;
         conn();
         try {
-            //TODO: check if individual has 10 contracts
             rs = stmt.executeQuery(
                     "SELECT contractCount FROM client WHERE id =" + this.clientId + ";"
             );
@@ -59,7 +58,7 @@ public class Account extends DBConnect {
             }
 
             if (contractCount == -1) {
-                System.out.println("No i chuj, coś się zepsuło w bazie");
+                System.out.println("Somethings wrong with database");
             } else if(clientIndividual && contractCount > 10){
                 System.out.println("This client has 10 contracts already. New contract won't be.");
             } else {
@@ -81,17 +80,20 @@ public class Account extends DBConnect {
                 }
 
                 if(tariffId == -1) {
-                    System.out.println("There is not such a tariff, or there was an internal database fuckup <3, new contract has not been added");
+                    System.out.println("There is not such a tariff, or there was an internal database error, new contract has not been added");
                 } else if(accountId == -1){
                     System.out.println("There was an error with getting account id :)");
                 } else {
                     System.out.println("Contract has been created");
                     Contract contract = new Contract(msisdn, tariffId);
                     contract.uploadContract(accountId);
+                    disconn();
                     return contract;
                 }
+                disconn();
                 return null;
             }
+            disconn();
             return null;
         } catch (Exception e) {
             System.err.println("Got an exception!");
@@ -107,7 +109,7 @@ public class Account extends DBConnect {
                     "INSERT INTO account(idClient, billingDate, accountName) VALUES ('"+ this.clientId +"','"+ this.billingDate +"','"+ this.name +"');"
             );
             System.out.println("New account has been created");
-
+            disconn();
         } catch (Exception e) {
             System.err.println("Got an exception!");
             System.err.println(e.getMessage());
@@ -122,6 +124,7 @@ public class Account extends DBConnect {
             );
             String message = (isDeleted) ? "Account has not been deleted, why? We dont know." : "Account has been deleted";
             System.out.println(message);
+
         } catch (Exception e) {
             System.err.println("Got an exception!");
             System.err.println(e.getMessage());

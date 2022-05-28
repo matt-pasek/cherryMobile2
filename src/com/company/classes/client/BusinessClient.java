@@ -1,9 +1,6 @@
 package com.company.classes.client;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 
 public class BusinessClient extends Client {
     String nip;
@@ -12,12 +9,36 @@ public class BusinessClient extends Client {
 
     int emailCount = 1;
 
-    public BusinessClient(String nip, String regon, String companyName, String email){
+    public BusinessClient(String nip, String regon, String companyName, String email) {
         this.nip = nip;
         this.regon = regon;
         this.companyName = companyName;
         this.email = email;
-        this.contractCount = 0;
+        int pointer = -1;
+        int contractCount = -1;
+        conn();
+        try {
+            rs = stmt.executeQuery(
+                    "SELECT pointer FROM businessClient WHERE nip="+ nip +";"
+            );
+            while (rs.next()){
+                pointer = rs.getInt("pointer");
+            }
+            if(pointer == -1) {
+                System.out.println("Database error");
+            } else {
+                rs = stmt.executeQuery(
+                        "SELECT contractCount FROM client WHERE id="+ pointer +";"
+                );
+                while (rs.next()){
+                    contractCount = rs.getInt("contractCount");
+                }
+            }
+            this.contractCount = contractCount;
+        } catch (Exception e) {
+            System.err.println("Got an exception!");
+            System.err.println(e.getMessage());
+        }
     }
 
     public String getNip() {
@@ -80,6 +101,7 @@ public class BusinessClient extends Client {
                     break;
                 }
             }
+            disconn();
         } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());

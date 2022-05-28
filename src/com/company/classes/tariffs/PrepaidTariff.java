@@ -44,6 +44,7 @@ public class PrepaidTariff extends Tariff{
             } else {
                 System.out.println("Tariff with this name already exists.");
             }
+            disconn();
         } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());

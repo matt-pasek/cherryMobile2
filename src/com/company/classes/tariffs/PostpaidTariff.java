@@ -36,7 +36,6 @@ public class PostpaidTariff extends Tariff{
             while(rs.next()) {
                 tariffs = rs.getInt("tariffs");
             }
-
             if (tariffs == -1) {
                 stmt.execute(
                         "INSERT INTO tariff(tariffName) VALUES ('"+ this.tariffName + "');"
@@ -53,6 +52,7 @@ public class PostpaidTariff extends Tariff{
             } else {
                 System.out.println("Tariff with this name already exists.");
             }
+            disconn();
         } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());
