@@ -1,12 +1,11 @@
 package com.company.classes;
 
-import com.company.classes.tariffs.Tariff;
-
-import java.sql.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class Account {
+public class Account extends DBConnect {
     ArrayList<Contract> contracts = new ArrayList<>();
     int clientId;
     int billingDate;
@@ -35,57 +34,75 @@ public class Account {
         this.name = name;
     }
 
-    public Contract createContract(int msisdn, String tariffName) {
+    public Contract createContract(BigDecimal msisdn, String tariffName) {
         int tariffId = -1;
         int contractCount = -1;
+        int accountId = -1;
+        boolean clientIndividual = false;
+        conn();
         try {
-            Class.forName("org.sqlite.JDBC");
-            String url = "jdbc:sqlite:db.sqlite";
-            Connection conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(
-                    "SELECT id FROM tariff WHERE tariffName = '" + tariffName + "';"
+            //TODO: check if individual has 10 contracts
+            rs = stmt.executeQuery(
+                    "SELECT contractCount FROM client WHERE id =" + this.clientId + ";"
             );
-            while (rs.next()) {
-                tariffId = rs.getInt("id");
+
+            while(rs.next()) {
+                contractCount = rs.getInt("contractCount");
             }
 
             rs = stmt.executeQuery(
-                    "SELECT COUNT(msisdn) as msisdn FROM contract WHERE idAccount =" + this.clientId + ";"
+                    "SELECT COUNT(pointer) as pointerCount FROM individualClient WHERE pointer =" + this.clientId + ";"
             );
 
-            while(rs.next()){
-                contractCount = rs.getInt("msisdn");
+            while(rs.next()) {
+                clientIndividual = rs.getInt("pointerCount") != 0;
             }
 
-            rs = stmt.executeQuery(
-                    "SELECT COUNT(contractCount) FROM client"
-            );
-            if(tariffId == -1) {
-                System.out.println("New tariff has been created");
-                Contract contract = new Contract(msisdn, tariffId);
-                //contract.uploadContract();
-                return contract;
+            if (contractCount == -1) {
+                System.out.println("No i chuj, coś się zepsuło w bazie");
+            } else if(clientIndividual && contractCount > 10){
+                System.out.println("This client has 10 contracts already. New contract won't be.");
             } else {
-                System.out.println("Tariff has been found, not adding new");
-                Contract contract = new Contract(msisdn, tariffId);
-                return contract;
+                System.out.println("Client verified successfully");
+                rs = stmt.executeQuery(
+                        "SELECT id FROM tariff WHERE tariffName = '" + tariffName + "';"
+                );
+
+                while (rs.next()) {
+                    tariffId = rs.getInt("id");
+                }
+
+                rs = stmt.executeQuery(
+                        "SELECT id FROM account WHERE idClient =" + this.clientId + " AND accountName = '" + this.name + "';"
+                );
+
+                while(rs.next()) {
+                    accountId = rs.getInt("id");
+                }
+
+                if(tariffId == -1) {
+                    System.out.println("There is not such a tariff, or there was an internal database fuckup <3, new contract has not been added");
+                } else if(accountId == -1){
+                    System.out.println("There was an error with getting account id :)");
+                } else {
+                    System.out.println("Contract has been created");
+                    Contract contract = new Contract(msisdn, tariffId);
+                    contract.uploadContract(accountId);
+                    return contract;
+                }
+                return null;
             }
-            
+            return null;
         } catch (Exception e) {
             System.err.println("Got an exception!");
             System.err.println(e.getMessage());
         }
-
         return null;
     }
 
     public void uploadAccount() {
+        conn();
         try {
-            Class.forName("org.sqlite.JDBC");
-            String url = "jdbc:sqlite:db.sqlite";
-            Connection conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
             stmt.execute(
                     "INSERT INTO account(idClient, billingDate, accountName) VALUES ('"+ this.clientId +"','"+ this.billingDate +"','"+ this.name +"');"
             );
@@ -98,11 +115,8 @@ public class Account {
     }
 
     public void destroyAccount() {
+        conn();
         try {
-            Class.forName("org.sqlite.JDBC");
-            String url = "jdbc:sqlite:db.sqlite";
-            Connection conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
             boolean isDeleted = stmt.execute(
                     "DELETE FROM account WHERE accountName = '" + this.name + "' AND idClient =" + this.clientId + ";"
             );

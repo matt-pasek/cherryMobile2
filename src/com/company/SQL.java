@@ -101,6 +101,7 @@ public class SQL {
                     idClient    integer not null,
                     billingDate int,
                     FOREIGN KEY (idClient) REFERENCES client(id)
+                    ON DELETE CASCADE
                 );
 
                 create unique index account_id_uindex
@@ -110,7 +111,7 @@ public class SQL {
         stmt.execute("""
                 create table if not exists contract
                 (
-                    msisdn           integer not null
+                    msisdn           real not null
                         constraint account_pk
                             primary key,
                     idAccount        integer not null,
@@ -119,8 +120,10 @@ public class SQL {
                     smsCount         integer,
                     mmsCount         integer,
                     transferMbsCount integer,
-                    FOREIGN KEY (idAccount) REFERENCES account(id),
+                    FOREIGN KEY (idAccount) REFERENCES account(id)
+                    ON DELETE CASCADE,
                     FOREIGN KEY (idTariff) REFERENCES tariff(id)
+                    ON DELETE CASCADE
                 );
 
                 create unique index contract_msisdn_uindex
@@ -129,22 +132,6 @@ public class SQL {
                 """);
         stmt.execute("""
                 create table if not exists postpaidTariff
-                (
-                    pointer          integer not null
-                        constraint postpaidTariff_pk
-                            primary key,
-                    smsPrice         real,
-                    mmsPrice         real,
-                    transferMbsPrice real,
-                    FOREIGN KEY (pointer) REFERENCES tariff(id)
-                );
-
-                create unique index postpaidTariff_pointer_uindex
-                    on postpaidTariff (pointer);
-
-                """);
-        stmt.execute("""
-                create table if not exists prepaidTariff
                 (
                     pointer            integer not null
                         constraint prepaidTariff_pk
@@ -159,6 +146,24 @@ public class SQL {
                     extraMmsPrice      real,
                     extraTransferPrice real,
                     FOREIGN KEY (pointer) REFERENCES tariff(id)
+                    ON DELETE CASCADE
+                );
+
+                create unique index postpaidTariff_pointer_uindex
+                    on postpaidTariff (pointer);
+
+                """);
+        stmt.execute("""
+                create table if not exists prepaidTariff
+                (
+                    pointer          integer not null
+                        constraint postpaidTariff_pk
+                            primary key,
+                    smsPrice         real,
+                    mmsPrice         real,
+                    transferMbsPrice real,
+                    FOREIGN KEY (pointer) REFERENCES tariff(id)
+                    
                 );
 
                 create unique index prepaidTariff_pointer_uindex
@@ -176,8 +181,11 @@ public class SQL {
 
                 create unique index tariff_id_uindex
                     on tariff (id);
+                    
 
                 """);
+
+
     }
 
 }

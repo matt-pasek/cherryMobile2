@@ -1,24 +1,16 @@
 package com.company.classes.client;
 
-import com.company.classes.client.BusinessClient;
-import com.company.classes.client.IndividualClient;
+import com.company.classes.DBConnect;
 
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
-public class ClientUpdate {
+
+public class ClientUpdate extends DBConnect {
     //CHECK CLIENTS
-    public static boolean checkIfPrivateClientExist(String pesel){
+    public boolean checkIfPrivateClientExist(String pesel){
+        conn();
         int countThisPesel = 1;
         try {
-            Class.forName("org.sqlite.JDBC");
-            String url = "jdbc:sqlite:db.sqlite";
-            Connection conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(
+            rs = stmt.executeQuery(
                     "SELECT COUNT(PESEL) as pesel FROM individualClient WHERE PESEL='"+pesel+"';"
             );
             while (rs.next()) {
@@ -32,14 +24,11 @@ public class ClientUpdate {
         return countThisPesel != 0;
     }
 
-    public static boolean checkIfBusinessClientExist(String NIP){
+    public boolean checkIfBusinessClientExist(String NIP){
+        conn();
         int countThisNip = 1;
         try {
-            Class.forName("org.sqlite.JDBC");
-            String url = "jdbc:sqlite:db.sqlite";
-            Connection conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(
+           rs = stmt.executeQuery(
                     "SELECT COUNT(nip) as nip FROM businessClient WHERE nip='"+NIP+"';"
             );
             while (rs.next()) {
@@ -54,7 +43,7 @@ public class ClientUpdate {
     }
 
     //ADD CLIENTS
-    public static BusinessClient CreateBusinessClient(String nip, String regon, String companyName, String email){
+    public BusinessClient CreateBusinessClient(String nip, String regon, String companyName, String email){
         //sprawdzanie nipu
         //sprawdzanie czy nie ma już takiej firmy
         if(!checkIfBusinessClientExist(nip)) {
@@ -82,7 +71,7 @@ public class ClientUpdate {
     }
 
 
-    public static IndividualClient CreatePrivateClient(String Name, String Surname, String PESELstr, String email){
+    public IndividualClient CreatePrivateClient(String Name, String Surname, String PESELstr, String email){
         if(!checkIfPrivateClientExist(PESELstr)) {
             if(PESELstr.length() == 11) {
                 //sprawdzanie PESELU
@@ -118,36 +107,33 @@ public class ClientUpdate {
 
     //DELETE CLIENTS
 
-    public static void DeleteBusinessClient(String nip){
+    public void DeleteBusinessClient(String nip){
         int pointer = 0;
+        int accountId = -1;
         String regon = "";
         String companyName = "";
         String email = "";
 
         if(checkIfBusinessClientExist(nip)) {
             System.out.println("The business client has been removed");
+            conn();
             try {
-                Class.forName("org.sqlite.JDBC");
-                String url = "jdbc:sqlite:db.sqlite";
-                Connection conn = DriverManager.getConnection(url);
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(
+                rs = stmt.executeQuery(
                         "SELECT * FROM businessClient WHERE nip='"+ nip + "';"
                 );
                 while(rs.next()) {
                     pointer = rs.getInt("pointer");
                     regon = rs.getString("regon");
                     companyName = rs.getString("companyName");
-
+                    stmt.execute(
+                            "INSERT INTO oldBusinessClient(id, email, nip, regon, companyName) VALUES ("+ pointer +", '" + email + "', '" + nip +"', '" + regon +"', '"+ companyName +"');"
+                    );
                 }
-
-                stmt.execute(
-                        "INSERT INTO oldBusinessClient(id, email, nip, regon, companyName) VALUES ("+ pointer +", '" + email + "', '" + nip +"', '" + regon +"', '"+ companyName +"');"
-                );
 
                 rs = stmt.executeQuery(
                         "SELECT pointer FROM businessClient WHERE nip='" + nip +"';"
                 );
+
                 while(rs.next()) {
                     pointer = rs.getInt("pointer");
                     stmt.execute("DELETE FROM client WHERE id=" + pointer +";");
@@ -156,6 +142,17 @@ public class ClientUpdate {
                 stmt.execute(
                         "DELETE FROM businessClient WHERE nip='" + nip +"';"
                 );
+
+                rs = stmt.executeQuery(
+                        "SELECT id FROM account WHERE idClient=" + pointer + ";"
+                );
+
+                while(rs.next()) {
+                    accountId = rs.getInt("id");
+                    stmt.execute(
+                            "DELETE FROM contract WHERE idAccount=" + accountId + ";"
+                    );
+                }
 
                 stmt.execute(
                         "DELETE FROM account WHERE idClient=" + pointer + ";"
@@ -170,35 +167,33 @@ public class ClientUpdate {
         }
     }
 
-    public static void DeletePrivateClient(String pesel){
-        int pointer = 0;
+    public void DeletePrivateClient(String pesel){
+        int pointer = -1;
+        int accountId = -1;
         String fName = "";
         String lName = "";
         String email = "";
 
+        conn();
         if(checkIfPrivateClientExist(pesel)) {
             System.out.println("Found client with given PESEL");
             try {
-                Class.forName("org.sqlite.JDBC");
-                String url = "jdbc:sqlite:db.sqlite";
-                Connection conn = DriverManager.getConnection(url);
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(
+                rs = stmt.executeQuery(
                         "SELECT * FROM individualClient WHERE pesel='"+ pesel + "';"
                 );
                 while(rs.next()) {
                      pointer = rs.getInt("pointer");
                      fName = rs.getString("fName");
-                     lName = rs.getString("lName");;
+                     lName = rs.getString("lName");
+                    stmt.execute(
+                            "INSERT INTO oldIndividualClient(id, email, fName, lName, pesel) VALUES ("+ pointer +", '" + email + "', '" + fName +"', '" + lName +"', '"+ pesel +"');"
+                    );
                 }
-
-                stmt.execute(
-                        "INSERT INTO oldIndividualClient(id, email, fName, lName, pesel) VALUES ("+ pointer +", '" + email + "', '" + fName +"', '" + lName +"', '"+ pesel +"');"
-                );
 
                 rs = stmt.executeQuery(
                         "SELECT pointer FROM individualClient WHERE pesel='" + pesel +"';"
                 );
+
                 while(rs.next()) {
                     pointer = rs.getInt("pointer");
                     stmt.execute("DELETE FROM client WHERE id=" + pointer +";");
@@ -208,11 +203,20 @@ public class ClientUpdate {
                         "DELETE FROM individualClient WHERE pesel='" + pesel +"';"
                 );
 
+                rs = stmt.executeQuery(
+                        "SELECT id FROM account WHERE idClient=" + pointer + ";"
+                );
+
+                while(rs.next()) {
+                    accountId = rs.getInt("id");
+                    stmt.execute(
+                            "DELETE FROM contract WHERE idAccount=" + accountId + ";"
+                    );
+                }
 
                 stmt.execute(
                     "DELETE FROM account WHERE idClient=" + pointer + ";"
                 );
-
             } catch (Exception e) {
                 System.err.println("Got an exception! ");
                 System.err.println(e.getMessage());

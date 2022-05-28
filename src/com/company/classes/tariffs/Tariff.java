@@ -1,8 +1,9 @@
 package com.company.classes.tariffs;
 
-import java.math.BigDecimal;
+import com.company.classes.DBConnect;
 
-public abstract class Tariff {
+
+public abstract class Tariff extends DBConnect {
     int id;
     String tariffName;
 }

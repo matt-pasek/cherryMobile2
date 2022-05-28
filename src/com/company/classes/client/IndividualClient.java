@@ -45,12 +45,9 @@ public class IndividualClient extends Client{
     @Override
     public void uploadClient() {
         int emailCount = 1;
+        conn();
         try {
-            Class.forName("org.sqlite.JDBC");
-            String url = "jdbc:sqlite:db.sqlite";
-            Connection conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(
+            rs = stmt.executeQuery(
                     "SELECT COUNT(email) as email FROM client WHERE email='"+this.email+"';"
             );
             while (rs.next()) {

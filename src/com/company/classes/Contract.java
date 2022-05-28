@@ -1,10 +1,10 @@
 package com.company.classes;
 
-import com.company.classes.tariffs.Tariff;
 
-public class Contract {
-    int msisdn;
+import java.math.BigDecimal;
 
+public class Contract extends DBConnect {
+    BigDecimal msisdn;
     int tariffId;
     int callCount;
     int smsCount;
@@ -13,7 +13,7 @@ public class Contract {
 
     // when add contract get contract amount check and increment for both
 
-    public Contract(int msisdn, int tariffId) {
+    public Contract(BigDecimal msisdn, int tariffId) {
         this.msisdn = msisdn;
         this.tariffId = tariffId;
         this.callCount = 0;
@@ -22,8 +22,16 @@ public class Contract {
         this.transferMbsCount = 0;
     }
 
-    public void contractUpload() {
-
+    public void uploadContract(int accountId) {
+        conn();
+        try {
+            stmt.execute(
+                    "INSERT INTO contract(msisdn, idAccount, idTariff, callCount, smsCount, mmsCount, transferMbsCount) VALUES (" + this.msisdn + ", " + accountId + ", " + this.tariffId + ", " + this.smsCount + ", " + this.mmsCount + ", " + this.callCount + ", " + this.transferMbsCount + ");"
+            );
+        } catch (Exception e) {
+            System.err.println("Got an exception!");
+            System.err.println(e.getMessage());
+        }
     }
 
 }

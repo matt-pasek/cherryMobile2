@@ -54,12 +54,9 @@ public class BusinessClient extends Client {
 
     @Override
     public void uploadClient(){
+        conn();
         try {
-            Class.forName("org.sqlite.JDBC");
-            String url = "jdbc:sqlite:db.sqlite";
-            Connection conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(
+            rs = stmt.executeQuery(
                     "SELECT COUNT(email) as email FROM client WHERE email='"+this.email+"';"
             );
             while (rs.next()) {
@@ -69,22 +66,20 @@ public class BusinessClient extends Client {
                 System.out.println("Client with this email already exists or there was an internal error.");
             } else {
                 stmt.execute(
-                        "INSERT INTO client(email, contractCount) VALUES ('"+this.email+"','"+ this.contractCount +"');"
+                        "INSERT INTO client(email, contractCount) VALUES ('" + this.email + "','" + this.contractCount + "');"
                 );
                 rs = stmt.executeQuery(
-                        "SELECT id FROM client WHERE email='"+email+"';"
+                        "SELECT id FROM client WHERE email='" + email + "';"
                 );
-                while(rs.next()) {
+                while (rs.next()) {
                     int id = rs.getInt("id");
                     stmt.execute(
-                            "INSERT INTO businessClient(pointer, nip, regon, companyName)  VALUES ('"+id+"', '"+this.nip+"', '"+this.regon+"', '"+this.companyName+"');"
+                            "INSERT INTO businessClient(pointer, nip, regon, companyName)  VALUES ('" + id + "', '" + this.nip + "', '" + this.regon + "', '" + this.companyName + "');"
                     );
                     System.out.println("New business client has been created");
                     break;
                 }
             }
-
-
         } catch (Exception e) {
             System.err.println("Got an exception! ");
             System.err.println(e.getMessage());

@@ -1,14 +1,11 @@
 package com.company.classes.client;
 
 import com.company.classes.Account;
+import com.company.classes.DBConnect;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 
-public abstract class Client {
+public abstract class Client extends DBConnect {
     String email;
     int contractCount;
     ArrayList<Account> accounts = new ArrayList<Account>();
@@ -38,13 +35,10 @@ public abstract class Client {
     }
 
     public Account createAccount(String name){
+        conn();
         int id = -1;
         try {
-            Class.forName("org.sqlite.JDBC");
-            String url = "jdbc:sqlite:db.sqlite";
-            Connection conn = DriverManager.getConnection(url);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(
+            rs = stmt.executeQuery(
                     "SELECT id FROM client WHERE email='"+this.email+"';"
             );
 
